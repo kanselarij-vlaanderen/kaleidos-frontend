@@ -15,7 +15,6 @@ export default class DocumentsDocumentCardComponent extends Component {
   @service toaster;
   @service intl;
 
-  @tracked isExpandedVersionHistory = false;
   @tracked isOpenUploadModal = false;
   @tracked isOpenVerifyDeleteModal = false;
   @tracked isEditingPiece = false;
@@ -145,11 +144,6 @@ export default class DocumentsDocumentCardComponent extends Component {
     yield this.lastPiece.save();
     this.isEditingPiece = false;
     this.pieceNameBuffer = null;
-  }
-
-  @action
-  toggleVersionHistory() {
-    this.isExpandedVersionHistory = !this.isExpandedVersionHistory;
   }
 
   @action

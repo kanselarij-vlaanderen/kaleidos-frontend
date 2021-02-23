@@ -139,30 +139,18 @@
       </div>
     </div>
     {{#if this.reverseSortedPieces.length}}
-      <div class="vlc-document-card__more">
-        <div class="js-vl-accordion {{if this.isExpandedVersionHistory "js-vl-accordion--open"}}">
-          <button
-            class="vl-toggle vl-link vl-link--bold"
-            type="button"
-            data-test-show-pieces-history
-            {{on "click" this.toggleVersionHistory}}
-          >
-            <i class="vl-link__icon vl-link__icon--before vl-toggle__icon ki-chevron-right"
-            ></i>
-            {{t "show-pieces"}}
-          </button>
-          {{#if this.isExpandedVersionHistory}}
-            <div class="vl-accordion__content js-vl-accordion__content">
-              <div class="vl-accordion__panel">
-                {{#each this.reverseSortedPieces as |piece|}}
-                  <WebComponents::VlDocument
-                    @onDeletePieceFromContainer={{@didDeletePiece}}
-                    @piece={{piece}} />
-                {{/each}}
-              </div>
-            </div>
-          {{/if}}
-        </div>
+      <div class="vlc-document-card__accordion">
+        {{!-- BUTTON: data-test-show-pieces-history (MISSING) --}}
+        <WebComponents::AuAccordion @label={{t "show-pieces"}}>
+          <div class="vlc-document-card__accordion-panel">
+            {{#each this.reverseSortedPieces as |piece|}}
+              <WebComponents::VlDocument
+                @onDeletePieceFromContainer={{@didDeletePiece}}
+                @piece={{piece}} />
+            {{/each}}
+          </div>
+        </WebComponents::AuAccordion>
+        {{!-- /// --}}
       </div>
     {{/if}}
   </div>
