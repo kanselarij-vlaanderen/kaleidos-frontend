@@ -1,23 +1,28 @@
 import Controller from '@ember/controller';
 import { inject as service } from '@ember/service';
+import { action } from '@ember/object';
+import { tracked } from '@glimmer/tracking';
 import DefaultQueryParamsMixin from 'ember-data-table/mixins/default-query-params';
 
-export default Controller.extend(DefaultQueryParamsMixin, {
-  currentSession: service(),
+export default class AgendasController extends Controller.extend(DefaultQueryParamsMixin) {
+  @service currentSession;
 
-  creatingNewSession: null,
+  @tracked creatingNewSession = false;
 
-  actions: {
-    createNewSession() {
-      this.toggleProperty('creatingNewSession');
-    },
-    cancelNewSessionForm() {
-      this.set('creatingNewSession', false);
-    },
-    successfullyAdded() {
-      this.set('creatingNewSession', false);
-      this.send('refreshRoute');
-      this.transitionToRoute('agendas.overview');
-    },
-  },
-});
+  @action
+  createNewSession() {
+    this.creatingNewSession = true;
+  }
+
+  @action
+  cancelNewSessionForm() {
+    this.creatingNewSession = false;
+  }
+
+  @action
+  successfullyAdded() {
+    this.creatingNewSession = false;
+    this.send('refreshRoute');
+    this.transitionToRoute('agendas.overview');
+  }
+}
