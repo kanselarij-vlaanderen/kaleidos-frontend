@@ -12,7 +12,7 @@ export default class AgendasOverviewController extends Controller {
   queryParams = ['from', 'to'];
 
   @tracked dateFilter = '';
-  dateRegex = /^(?:(\d{1,2})-)?(?:(\d{1,2})-)?(\d{4})$/;
+  dateRegex = /^(?:(\d{1,2})[-,/])?(?:(\d{1,2})[-,/])?(\d{4})$/;
   sort = '-planned-start,number-representation';
   page = 0;
   size = 10;
@@ -52,30 +52,33 @@ export default class AgendasOverviewController extends Controller {
 
   @action
   setDateFilter(date) {
-    const newDate = date.split('/').join('-');
+    const newDate = date.replace('-', '/');
     const match = this.dateRegex.exec(newDate);
     if (!match) {
-      this.set('from', undefined);
-      this.set('to', undefined);
-      return;
-    }
-    const min = moment(parseInt(match[3], 10), 'YYYY', true);
-    let unitToAdd;
-    if (match[1] && match[2]) {
-      unitToAdd = 'day';
-      min.set('date', parseInt(match[1], 10));
-      min.set('month', parseInt(match[2], 10) - 1); // Count starts from 0
-    } else if (match[1]) {
-      unitToAdd = 'month';
-      min.set('month', parseInt(match[1], 10) - 1);
+      this.from = undefined;
+      this.to = undefined;
     } else {
-      unitToAdd = 'year';
-    }
-    const max = min.clone().add(1, `${unitToAdd}s`);
+      const min = moment(parseInt(match[3], 10), 'YYYY', true);
+      let unitToAdd;
+      if (match[1] && match[2]) {
+        unitToAdd = 'day';
+        min.set('date', parseInt(match[1], 10));
+        min.set('month', parseInt(match[2], 10) - 1); // Count starts from 0
+      } else if (match[1]) {
+        unitToAdd = 'month';
+        min.set('month', parseInt(match[1], 10) - 1); // Count starts from 0
+      } else {
+        unitToAdd = 'year';
+      }
+      const max = min.clone().add(1, `${unitToAdd}s`);
 
-    this.set('from', min.format('YYYY-MM-DD'));
-    this.set('to', max.format('YYYY-MM-DD'));
-    this.set('page', 0);
+      this.from = min.format('YYYY-MM-DD');
+      this.to = max.format('YYYY-MM-DD');
+
+      this.set('from', min.format('YYYY-MM-DD'));
+      this.set('to', max.format('YYYY-MM-DD'));
+      this.set('page', 0);
+    }
   }
 
   @action
