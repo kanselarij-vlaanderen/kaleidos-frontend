@@ -1,63 +1,55 @@
 <div class="vlc-u-box-model-maximize-height auk-scroll-wrapper">
   <div class="auk-scroll-wrapper__body">
     <div class="auk-u-m-8">
-      {{#if (not (or from to))}}
-        <div class="auk-u-mb-8">
-          {{agenda/future-agendas
-            meetings=activeAgendas
-            type="active"
-            emptyText=(t "no-active-agenda")
-            title=(t "active-agenda")
-          }}
-        </div>
+      {{#if (or this.from this.to)}}
+        <ChangesAlert
+          @message={{t "filtered-agendas"}}
+          @buttonText={{t "clear-filter"}}
+          @clearAction={{this.clearFilter}}
+        />
       {{else}}
-        {{changes-alert
-          message=(t "filtered-agendas")
-          buttonText=(t "clear-filter")
-          clearAction=(action "clearFilter")
-        }}
+        <div class="auk-u-mb-8">
+          <Agenda::FutureAgendas
+            @meetings={{this.activeAgendas}}
+            @type="active"
+            @emptyText={{t "no-active-agenda"}}
+            @title={{t "active-agenda"}}
+          />
+        </div>
       {{/if}}
-
       <div class="auk-u-mb-8">
-        <div class="auk-toolbar-complex">
-          <div class="auk-toolbar-complex__left">
-            <div class="auk-toolbar-complex__item">
-              <h2 class="auk-h3">
+        <Auk::Toolbar>
+          <Auk::Toolbar::Group @position="left">
+            <Auk::Toolbar::Item>
+              <h3 class="auk-h3">
                 {{t "history"}}
-                {{#if (or from to)}}
+                {{#if (or this.from this.to)}}
                   (
-                  {{moment-format from "DD-MM-YYYY"}}
+                  {{moment-format this.from "DD-MM-YYYY"}}
                   -
-                  {{moment-format to "DD-MM-YYYY"}}
+                  {{moment-format this.to "DD-MM-YYYY"}}
                   )
                 {{/if}}
-              </h2>
-            </div>
-          </div>
-          <div class="auk-toolbar-complex__right">
-            <div class="auk-toolbar-complex__item" data-test-route-agendas-overview-filter-container data-children-count="1">
-              {{input
-                type="text"
-                id=id
-                data-test-route-agendas-overview-filter-input=true
-                class="auk-input"
-                value=dateFilter
-                placeholder="bv. 01/2020"
-              }}
-              <button class="auk-button auk-button--secondary auk-button--icon"
-                type="submit"
+              </h3>
+            </Auk::Toolbar::Item>
+          </Auk::Toolbar::Group>
+          <Auk::Toolbar::Group @position="right">
+            <Auk::Toolbar::Item data-test-route-agendas-overview-filter-container data-children-count="1">
+              <Auk::Input 
+                @type="text"
+                @value={{this.dateFilter}}
+                @placeholder="bv. 01/2020"
+                data-test-route-agendas-overview-filter-input={{true}}
+              />
+              <Auk::Button 
+                @skin="secondary"
+                @icon="search"
+                {{on "click" this.setDateFilter}}
                 data-test-route-agendas-overview-filter-button
-                onclick={{action "setDateFilter" dateFilter}}
-              >
-                <span class="auk-button__content">
-                  <div class="auk-icon auk-icon--default">
-                    <i class="ki ki-search"></i>
-                  </div>
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
+              />
+            </Auk::Toolbar::Item>
+          </Auk::Toolbar::Group>
+        </Auk::Toolbar>
         <div class="auk-u-mb-8">
           {{#if (await model)}}
             {{#data-table

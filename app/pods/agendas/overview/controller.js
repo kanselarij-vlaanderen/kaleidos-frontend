@@ -65,8 +65,8 @@ export default class AgendasOverviewController extends Controller {
   // }
 
   @action
-  setDateFilter(date) {
-    const match = /^(?:(\d{1,2})[-,/])?(?:(\d{1,2})[-,/])?(\d{4})$/.exec(date);
+  setDateFilter() {
+    const match = /^(?:(\d{1,2})[-,/])?(?:(\d{1,2})[-,/])?(\d{4})$/.exec(this.dateFilter);
     if (!match) {
       this.from = null;
       this.to = null;
