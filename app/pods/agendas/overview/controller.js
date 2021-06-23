@@ -9,14 +9,28 @@ export default class AgendasOverviewController extends Controller {
   @service intl;
   @service agendaService;
 
-  queryParams = ['from', 'to'];
+  queryParams = {
+    page: {
+      type: 'number',
+    },
+    size: {
+      type: 'number',
+    },
+    sort: {
+      type: 'string',
+    },
+    from: {
+      type: 'string',
+    },
+    to: {
+      type: 'string',
+    },
+  };
 
   @tracked dateFilter = '';
-  dateRegex = /^(?:(\d{1,2})[-,/])?(?:(\d{1,2})[-,/])?(\d{4})$/;
   sort = '-planned-start,number-representation';
   page = 0;
   size = 10;
-  filter = '';
 
   get activeAgendas() {
     console.warn('Not implemented: Getting active agendas');
@@ -52,47 +66,40 @@ export default class AgendasOverviewController extends Controller {
 
   @action
   setDateFilter(date) {
-    const newDate = date.replace('-', '/');
-    const match = this.dateRegex.exec(newDate);
+    const match = /^(?:(\d{1,2})[-,/])?(?:(\d{1,2})[-,/])?(\d{4})$/.exec(date);
     if (!match) {
-      this.from = undefined;
-      this.to = undefined;
-    } else {
-      const min = moment(parseInt(match[3], 10), 'YYYY', true);
-      let unitToAdd;
-      if (match[1] && match[2]) {
-        unitToAdd = 'day';
-        min.set('date', parseInt(match[1], 10));
-        min.set('month', parseInt(match[2], 10) - 1); // Count starts from 0
-      } else if (match[1]) {
-        unitToAdd = 'month';
-        min.set('month', parseInt(match[1], 10) - 1); // Count starts from 0
-      } else {
-        unitToAdd = 'year';
-      }
-      const max = min.clone().add(1, `${unitToAdd}s`);
-
-      this.from = min.format('YYYY-MM-DD');
-      this.to = max.format('YYYY-MM-DD');
-
-      this.set('from', min.format('YYYY-MM-DD'));
-      this.set('to', max.format('YYYY-MM-DD'));
-      this.set('page', 0);
+      this.from = null;
+      this.to = null;
+      return;
     }
+    const min = moment(parseInt(match[3], 10), 'YYYY', true);
+    let unitToAdd;
+    if (match[1] && match[2]) {
+      unitToAdd = 'day';
+      min.set('date', parseInt(match[1], 10));
+      min.set('month', parseInt(match[2], 10) - 1); // Count starts from 0
+    } else if (match[1]) {
+      unitToAdd = 'month';
+      min.set('month', parseInt(match[1], 10) - 1); // Count starts from 0
+    } else {
+      unitToAdd = 'year';
+    }
+    const max = min.clone().add(1, `${unitToAdd}s`);
+    this.set('from', min.format('YYYY-MM-DD')); // TODO: setter instead of @tracked on qp's before updating to Ember 3.22+ (https://github.com/emberjs/ember.js/issues/18715)
+    this.set('to', max.format('YYYY-MM-DD')); // TODO: setter instead of @tracked on qp's before updating to Ember 3.22+ (https://github.com/emberjs/ember.js/issues/18715)
+    this.set('page', 0); // TODO: setter instead of @tracked on qp's before updating to Ember 3.22+ (https://github.com/emberjs/ember.js/issues/18715)
   }
 
   @action
   clearFilter() {
-    this.set('to', null);
-    this.set('from', null);
-    this.set('dateFilter', '');
+    this.set('from', null); // TODO: setter instead of @tracked on qp's before updating to Ember 3.22+ (https://github.com/emberjs/ember.js/issues/18715)
+    this.set('to', null); // TODO: setter instead of @tracked on qp's before updating to Ember 3.22+ (https://github.com/emberjs/ember.js/issues/18715)
+    this.set('dateFilter', ''); // TODO: setter instead of @tracked on qp's before updating to Ember 3.22+ (https://github.com/emberjs/ember.js/issues/18715)
   }
 
   @action
-  onClickRow(meeting) {
-    meeting.get('latestAgenda').then((latestAgenda) => {
-      const latestAgendaId = latestAgenda.get('id');
-      this.transitionToRoute('agenda.agendaitems', meeting.id, latestAgendaId);
-    });
+  async onClickRow(meeting) {
+    const agenda = await meeting.latestAgenda;
+    this.transitionToRoute('agenda.agendaItems', meeting.id, agenda.id);
   }
 }
