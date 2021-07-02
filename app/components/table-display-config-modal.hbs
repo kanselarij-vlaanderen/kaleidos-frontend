@@ -1,0 +1,48 @@
+<div class="auk-popover__header" data-test-au-modal-publication-new>
+  <Auk::Toolbar>
+    <Auk::Toolbar::Group @position="left">
+      <Auk::Toolbar::Item>
+        <h4 class="auk-toolbar__title">{{t "publications-setting-show-columns-modal-title"}}</h4>
+      </Auk::Toolbar::Item>
+    </Auk::Toolbar::Group>
+    <Auk::Toolbar::Group @position="right">
+      <Auk::Toolbar::Item>
+        <Auk::Button
+          @skin="muted"
+          @layout="icon-only"
+          @icon="ki ki-close"
+          {{on "click" @onClose}}
+        >
+          <span class="auk-u-sr-only">{{t "close"}}</span>
+        </Auk::Button>
+      </Auk::Toolbar::Item>
+    </Auk::Toolbar::Group>
+  </Auk::Toolbar>
+</div>
+<div class="auk-popover__body">
+  <div class="auk-form-group-layout auk-form-group-layout--grid">
+    <div class="auk-o-grid">
+      {{#each this.optionColumns as |column|}}
+        <div class="auk-o-grid-col-12">
+          <div class="auk-form-group">
+            <Auk::CheckboxList>
+              {{#each column as |option|}}
+                <Auk::Checkbox
+                  @checked={{get @options option.keyName}}
+                  {{on "input" (fn this.toggleOption option.keyName)}}
+                >
+                  {{t option.translationKey}}
+                  {{#if option.translationKeySmall}}
+                    {{#if (not-eq (t option.translationKey) (t option.translationKeySmall))}}
+                      <span class="auk-u-text-small auk-u-muted">({{t option.translationKeySmall}})</span>
+                    {{/if}}
+                  {{/if}}
+                </Auk::Checkbox>
+              {{/each}}
+            </Auk::CheckboxList>
+          </div>
+        </div>
+      {{/each}}
+    </div>
+  </div>
+</div>

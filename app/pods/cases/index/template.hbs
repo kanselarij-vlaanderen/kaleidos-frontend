@@ -1,0 +1,222 @@
+{{page-title (t "cases")}}
+<Cases::CasesHeader 
+  @onSave={{this.close}} 
+  @showArchived={{this.showArchived}} 
+  @onToggleShowArchived={{this.toggleShowArchived}} 
+/>
+<div class="auk-scroll-wrapper">
+  <div class="auk-scroll-wrapper__body">
+    <div class="auk-u-m-4">
+      {{#if this.model.length}}
+        <table class="auk-table auk-table--styled js-data-table">
+          <thead>
+            <tr>
+              {{#each this.tableColumns as |column|}}
+                {{#if (get this.tableColumnDisplayOptions column.keyName)}}
+                  {{#if column.sortKey}}
+                    <Utils::ThSortable
+                      @onChange={{this.sortTable}}
+                      @currentSorting={{this.sort}}
+                      @field={{column.sortKey}}
+                      @label={{t column.translationKey}}
+                    />
+                  {{else}}
+                    <th class="auk-u-text-nowrap" >
+                      {{t column.translationKey}}
+                    </th>
+                  {{/if}}
+                {{/if}}
+              {{/each}}
+              <th>&nbsp;</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#if this.isLoadingModel}}
+              <tr>
+                <td colspan={{add this.tableColumns.length 1}}>{{t "loading"}}</td>
+              </tr>
+            {{else}}
+              {{#each this.model as |case|}}
+                <tr class="auk-table--interaction-cursor" {{on "click" (fn this.onClickTableRow case)}}>
+                  {{#if this.tableColumnDisplayOptions.caseName}}
+                    <td>
+                      {{!-- Fallback to case.title is required for legay data in production --}}
+                      {{if case.shortTitle case.shortTitle case.title}}
+                    </td>
+                  {{/if}}
+                  {{!-- Add later --}}
+                  {{!-- {{#if this.tableColumnDisplayOptions.latestOnAgenda}}
+                    <td>
+                      {{moment-format case.created "DD-MM-YYYY HH:mm"}}
+                    </td>
+                  {{/if}} --}}
+                  {{#if this.tableColumnDisplayOptions.createdOn}}
+                    <td>
+                      {{moment-format case.created "DD-MM-YYYY HH:mm"}}
+                    </td>
+                  {{/if}}
+                  <td>
+                    <div class="auk-button-toolbar">
+                      {{#if this.currentSession.isEditor}}
+                        <button type="button"
+                          class="auk-button auk-button--borderless auk-button--icon">
+                          <span class="auk-button__content">
+                            <div class="auk-icon auk-icon--default auk-icon--more">
+                              <i class="ki ki-more"></i>
+                            </div>  
+                          </span>
+                          <AttachPopover
+                            @renderInPlace={{true}}
+                            @class="ember-attacher-popper"
+                            @hideOn="clickout click"
+                            @showOn="click"
+                            @animation="shift"
+                            @placement="bottom-end"
+                          >
+                            <ul 
+                              class="auk-menu auk-menu--visible"
+                            >
+                              <li>
+                                <div class="auk-menu__item"
+                                  {{on "click" (fn this.editCase case)}}
+                                >
+                                  {{t "edit-2"}}
+                                </div>
+                              </li>
+                              <li>
+                                {{#if case.isArchived}}
+                                  <div class="auk-menu__item auk-menu__item"
+                                    {{on "click" (perform this.unarchiveCaseTask case)}}
+                                  >
+                                    {{t "unarchive"}}
+                                  </div>
+                                {{else}}
+                                  <div class="auk-menu__item auk-menu__item--danger"
+                                    {{on "click" (fn this.requestArchiveCase case)}}
+                                  >
+                                    {{t "delete"}}
+                                  </div>
+                                {{/if}}
+                              </li>
+                            </ul>
+                          </AttachPopover>
+                        </button>
+                      {{/if}}
+                      <LinkTo @route="cases.case.subcases" @model={{case.id}} class="auk-button auk-button--borderless auk-button--icon">
+                        <span class="auk-button__content">
+                          <div class="auk-icon auk-icon--default">
+                            <i class="ki ki-nav-right"></i>
+                          </div>
+                        </span>
+                      </LinkTo>
+                    </div>
+                  </td>
+                </tr>
+              {{/each}}
+            {{/if}}
+          </tbody>
+        </table>
+      {{else}}
+        <Auk::Panel>
+          <Auk::Panel::Body>
+            <Auk::EmptyState @message={{t "no-results-found"}} />
+          </Auk::Panel::Body>
+        </Auk::Panel>
+      {{/if}}
+    </div>
+  </div>
+</div>
+<div>
+  <hr>
+</div>
+<div class="auk-u-mx-4">
+  <Auk::Toolbar>
+    <Auk::Toolbar::Group @position="left">
+      <Auk::Toolbar::Item>
+        <Auk::Pagination
+          @page={{this.page}}
+          @size={{this.size}}
+          @nbOfItems={{this.model.length}}
+          @total={{this.model.meta.count}}
+          @onNextPage={{this.nextPage}}
+          @onPreviousPage={{this.prevPage}}
+        />
+      </Auk::Toolbar::Item>
+    </Auk::Toolbar::Group>
+    <Auk::Toolbar::Group @position="right">
+      <Auk::Toolbar::Item>
+        <Auk::Button
+          @icon="settings"
+          @skin="borderless"
+          data-test-publication-button-filter-tables
+          {{on "click" this.toggleColumnDisplayOptions}}
+        />
+        <AttachPopover
+          @class="auk-popover"
+          @showOn="click"
+          @placement="top"
+          @hideOn="click"
+          @isShown={{this.showTableDisplayOptions}}
+          @renderInPlace={{false}}
+        >
+          <TableDisplayConfigModal
+            @configElements={{this.tableColumns}}
+            @options={{this.tableColumnDisplayOptions}}
+            @onChange={{this.changeColumnDisplayOption}}
+            @onClose={{this.toggleColumnDisplayOptions}}
+          />
+        </AttachPopover>
+      </Auk::Toolbar::Item>
+      <Auk::Toolbar::Item>
+        {{t "amount-showed"}}
+      </Auk::Toolbar::Item>
+      <Auk::Toolbar::Item>
+        <WebComponents::AuPageSize
+          @sizeOptions={{this.sizeOptions}}
+          @selectedSize={{this.size}}
+          @onChange={{this.setSizeOption}}
+        >
+        </WebComponents::AuPageSize>
+      </Auk::Toolbar::Item>
+    </Auk::Toolbar::Group>
+  </Auk::Toolbar>
+</div>
+{{#if isEditingRow}}
+  <Auk::Modal>
+    <Auk::Modal::Header 
+      @title={{t "edit-case"}}
+      @onClose={{this.cancelEditing}}
+    />
+    <Cases::EditCase 
+      @caseToEdit={{this.selectedCase}}
+      @onClose={{this.cancelEditing}}
+    />
+  </Auk::Modal>
+{{/if}}
+{{#if isArchivingCase}}
+  <Auk::Modal>
+    <Auk::Modal::Header 
+      @title={{t "archive-case"}}
+      @onClose={{this.cancelArchiveCase}}
+    />
+    <Auk::Modal::Body>
+      <p>{{t "archive-case-message"}}</p>
+    </Auk::Modal::Body>
+    <Auk::Modal::Footer @onCancel={{this.cancelArchiveCase}}>
+      <Auk::Toolbar>
+        <Auk::Toolbar::Group @position="right">
+          <Auk::Toolbar::Item>
+            <Auk::Button 
+              @skin="danger-primary" 
+              @icon="delete"
+              @loading={{this.archiveCaseTask.isRunning}}
+              {{on "click" (perform this.archiveCaseTask)}}
+            >
+              {{t "delete"}}
+            </Auk::Button>
+          </Auk::Toolbar::Item>
+        </Auk::Toolbar::Group>
+      </Auk::Toolbar>
+    </Auk::Modal::Footer>
+  </Auk::Modal>
+{{/if}}

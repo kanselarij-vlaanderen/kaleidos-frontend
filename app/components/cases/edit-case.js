@@ -1,18 +1,20 @@
-import Component from '@ember/component';
+import Component from '@glimmer/component';
+import { tracked } from '@glimmer/tracking';
+import { action } from '@ember/object';
+import { task } from 'ember-concurrency-decorators';
 
-export default Component.extend({
+export default class EditCaseComponent extends Component {
+  @tracked shortTitle;
 
-  actions: {
-    toggleIsEditing() {
-      this.cancelEditing();
-    },
+  @action
+  onChange() {
+    this.shortTitle = this.args.caseToEdit.shortTitle;
+  }
 
-    saveChanges() {
-      this.set('isLoading', true);
-      this.caseToEdit.save().then(() => {
-        this.cancelEditing();
-        this.set('isLoading', false);
-      });
-    },
-  },
-});
+  @task
+  *editCaseTask() {
+    this.args.caseToEdit.shortTitle = this.shortTitle;
+    yield this.args.caseToEdit.save();
+    this.args.onClose();
+  }
+}
