@@ -50,8 +50,7 @@
     {{#if @notaGroups.length}}
       <div>
         <ul
-          {{sortable-group onChange=@onReorderAgendaitems}}
-          {{did-update (perform this.groupNotasOnGroupName @notas) @notas}}>
+          {{sortable-group onChange=@onReorderAgendaitems}}>
           {{#each @notaGroups as |agendaitemGroup index|}}
             {{#unless (and (eq index 0) (is-empty agendaitemGroup.sortedMandatees))}}
               <Agenda::AgendaOverview::AgendaitemGroupHeader @mandatees={{agendaitemGroup.sortedMandatees}}/>
@@ -86,7 +85,7 @@
       </div>
     {{/if}}
   {{else}}
-    <WebComponents::LoadingPage />
+    <Auk::Loader @message={{t "agendaitem-grouping-message"}} />
   {{/if}}
   <div class="vlc-agenda-items-section-header">
     <h3 class="auk-h3 auk-u-m-0 vlc-agenda-items-section-header__title">
@@ -121,7 +120,4 @@
       <WebComponents::VlAlert @message={{t "no-announcements-yet"}} />
     {{/if}}
   </div>
-  {{#if this.showLoader}}
-    <WebComponents::LoadingOverlay />
-  {{/if}}
 </div>
